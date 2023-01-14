@@ -36,7 +36,7 @@ int main()
     descriptor->compute(image1,keypoints_1,descrip_1);  //descrip_1 : keypoints.size() * 32 (关键点个数 * 32维）
     descriptor->compute(image2,keypoints_2,descrip_2);
 
-    cout<<"descrip_1 "<<descrip_1.rows<<' '<<descrip_1.<<endl;
+    cout<<"descrip_1 "<<descrip_1.rows<<' '<<descrip_1.cols<<endl;
     cout<<"keypoints" <<keypoints_1.size()<<endl;
 
     for(int i=0;i<descrip_1.rows;i++)
@@ -47,8 +47,6 @@ int main()
         }
         cout<<endl;
     }
-
-
 
     cv::Mat img1_out;
     cv::drawKeypoints(image1,keypoints_1,img1_out,cv::Scalar::all(-1),cv::DrawMatchesFlags::DEFAULT);
