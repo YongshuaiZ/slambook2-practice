@@ -45,6 +45,9 @@ int main() {
     pose_estimation_2d2d(keypoints_1, keypoints_2, matches, R, t);
 
     //-- 验证E=t^R*scale
+    // 手写t的反对称矩阵，这里利用了OpenCV的Mat的子类 Mat_
+    // Mat_可以像Eigen中的matrix一样，用<<流操作 和 ,逗号分隔符进行初始化
+    // Mat_重载了许多操作符，以供方便
     Mat t_x =
             (Mat_<double>(3, 3) << 0, -t.at<double>(2, 0), t.at<double>(1, 0),
                     t.at<double>(2, 0), 0, -t.at<double>(0, 0),
@@ -142,6 +145,10 @@ void pose_estimation_2d2d(std::vector<KeyPoint> keypoints_1,
     cout << "fundamental_matrix is " << endl << fundamental_matrix << endl;
 
     //-- 计算本质矩阵
+    //    //-- 计算本质矩阵
+    //    // 注意计算本质矩阵需要说明内参，这里给到光心位置和焦距等价于给出内参
+    //    // 因为通过像素坐标的对极约束公式p2^T * F * p1我们直接计算的应该是F矩阵，
+    //    // 进而给出内参K，求出E矩阵（OpenCV自动筛选两个角度深度值均为正的结果）
     Point2d principal_point(325.1, 249.7);  //相机光心, TUM dataset标定值
     double focal_length = 521;      //相机焦距, TUM dataset标定值
     Mat essential_matrix;
