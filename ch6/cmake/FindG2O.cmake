@@ -40,6 +40,7 @@ MACRO(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     /opt/local/lib
     /sw/local/lib
     /sw/lib
+    NO_DEFAULT_PATH
     )
   
   FIND_LIBRARY(${MYLIBRARY}
@@ -64,6 +65,7 @@ MACRO(FIND_G2O_LIBRARY MYLIBRARY MYLIBRARYNAME)
     /opt/local/lib
     /sw/local/lib
     /sw/lib
+    NO_DEFAULT_PATH
     )
   
   IF(NOT ${MYLIBRARY}_DEBUG)
