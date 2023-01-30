@@ -13,6 +13,7 @@ namespace myslam{
         static long factory_id = 0;
         Frame::Ptr new_frame(new Frame);
         new_frame->id_ = factory_id ++;
+        return new_frame;
     }
 
     void Frame::SetKeyFrame() {

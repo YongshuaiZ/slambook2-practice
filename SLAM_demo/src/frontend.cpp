@@ -4,8 +4,8 @@
 #include <opencv2/opencv.hpp>
 
 #include "myslam/algorithm.h"
-//#include "myslam/backend.h"
-//#include "myslam/config.h"
+#include "myslam/backend.h"
+#include "myslam/config.h"
 #include "myslam/feature.h"
 #include "myslam/frontend.h"
 #include "myslam/g2o_types.h"
@@ -13,6 +13,12 @@
 #include "myslam/viewer.h"
 
 namespace myslam{
+
+Frontend::Frontend() {
+  gftt_ = cv::GFTTDetector::create(Config::Get<int>("num_features"), 0.01, 20);
+  num_features_init_ = Config::Get<int>("num_features_init");
+  num_features_ = Config::Get<int>("num_features");
+}
 
 bool Frontend::AddFrame(myslam::Frame::Ptr frame){
      current_frame_ = frame;
@@ -82,6 +88,7 @@ bool Frontend::InsertKeyframe() {
 
     // update backend because we have a new keyframe
     backend_->UpdateMap();
+    LOG(INFO) << "ceshi";
 
     if (viewer_) viewer_->UpdateMap();
 
@@ -290,9 +297,6 @@ bool Frontend::StereoInit() {
        return true;
     }
     return false;
-
-
-
 }
 
 // 构建新帧, 返回帧中2D特帧点的个数
@@ -366,7 +370,7 @@ int Frontend::FindFeaturesInRight() {
 /// build init map with single image
 /// 使用三角化  生成 MapPoint
 /// 后端更新map (Backend)
-int Frontend::BuildInitMap() {
+bool Frontend::BuildInitMap() {
     std::vector<Sophus::SE3d> poses{
         camera_left_->pose(), camera_right_->pose()
     };
@@ -407,7 +411,7 @@ int Frontend::BuildInitMap() {
         return true;
 }
 
-    bool Frontend::Reset() {
+bool Frontend::Reset() {
         LOG(INFO) << "Reset is not implemented. ";
         return true;
     }

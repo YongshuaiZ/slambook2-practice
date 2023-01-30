@@ -12,7 +12,7 @@ namespace myslam{
 
 // forward declare
 struct Feature;
-
+struct MapPoint;
 /**
 * 帧 frame
 *

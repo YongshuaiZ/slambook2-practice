@@ -5,6 +5,10 @@ add_library(myslam SHARED
         map.cpp
         frontend.cpp
         camera.cpp
-        viewer.cpp)
+        viewer.cpp
+        backend.cpp
+        visual_odometry.cpp
+        config.cpp
+        dataset.cpp)
 
 target_link_libraries(myslam ${THIRD_PARTY_LIBS})
