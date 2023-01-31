@@ -27,10 +27,13 @@ namespace myslam{
 
     /// add mappoint
     void Map::InsertMapPoint(MapPoint::Ptr map_point){
+
+//        LOG(INFO)  << landmarks_.find(map_point->id_);
         if (landmarks_.find(map_point->id_) == landmarks_.end()) {
             landmarks_.insert(make_pair(map_point->id_, map_point));
             active_landmarks_.insert(make_pair(map_point->id_, map_point));
         } else {
+            LOG(INFO)  << "test";
             landmarks_[map_point->id_] = map_point;
             active_landmarks_[map_point->id_] = map_point;
         }
@@ -72,6 +75,14 @@ namespace myslam{
             for(auto feat:frame_to_remove->features_left_){
                 auto mp = feat->map_point_.lock();
                 if(mp){
+                    mp->RemoveObservation(feat);
+                }
+            }
+
+            for (auto feat : frame_to_remove->features_right_) {
+                if (feat == nullptr) continue;
+                auto mp = feat->map_point_.lock();
+                if (mp) {
                     mp->RemoveObservation(feat);
                 }
             }

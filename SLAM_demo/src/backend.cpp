@@ -63,7 +63,6 @@ namespace myslam {
             if (kf->keyframe_id_ > max_kf_id) {
                 max_kf_id = kf->keyframe_id_;
             }
-
             vertices.insert({kf->keyframe_id_, vertex_pose});
         }
 
@@ -98,6 +97,7 @@ namespace myslam {
                 }
 
                 // 如果landmark还没有被加入优化，则新加一个顶点
+
                 if (vertices_landmarks.find(landmark_id) ==
                     vertices_landmarks.end()) {
                     VertexXYZ *v = new VertexXYZ;
@@ -164,7 +164,10 @@ namespace myslam {
                   << cnt_inlier;
 
         // Set pose and lanrmark position
+
+
         for (auto &v : vertices) {
+
             keyframes.at(v.first)->SetPose(v.second->estimate());
         }
         for (auto &v : vertices_landmarks) {

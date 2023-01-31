@@ -13,13 +13,13 @@ namespace myslam {
 class Config {
    private:
     static std::shared_ptr<Config> config_;
-    cv::FileStorage file_;
+    cv::FileStorage file_;  // 访问XML，YAML文件
 
     Config() {}  // private constructor makes a singleton
    public:
     ~Config();  // close the file when deconstructing
 
-    // set a new config file
+    // set a new config file  【静态成员函数只能访问静态成员变量】
     static bool SetParameterFile(const std::string &filename);
 
     // access the parameter values

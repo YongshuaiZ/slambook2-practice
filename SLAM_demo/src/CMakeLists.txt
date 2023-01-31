@@ -3,12 +3,12 @@ add_library(myslam SHARED
         feature.cpp
         mappoint.cpp
         map.cpp
-        frontend.cpp
         camera.cpp
         viewer.cpp
         backend.cpp
         visual_odometry.cpp
         config.cpp
-        dataset.cpp)
+        dataset.cpp
+        frontend.cpp)
 
 target_link_libraries(myslam ${THIRD_PARTY_LIBS})

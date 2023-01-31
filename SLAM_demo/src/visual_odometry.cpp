@@ -12,14 +12,13 @@ namespace myslam{
             : config_file_path_(config_path) {}
 
     bool VisualOdometry::Init() {
-        // read from config file
+        // use [cv::FileStorage] to read from config file
         if (Config::SetParameterFile(config_file_path_) == false) {
             return false;
         }
 
         dataset_ = Dataset::Ptr(new Dataset(Config::Get<std::string>("dataset_dir")));
-        CHECK_EQ(dataset_->Init(), true);
-
+        CHECK_EQ(dataset_->Init(), true); // 读取内外参
 
         // create components and links
         frontend_ = Frontend::Ptr(new Frontend);
@@ -30,13 +29,12 @@ namespace myslam{
         frontend_->SetBackend(backend_);
         frontend_->SetMap(map_);
         frontend_->SetViewer(viewer_);
-        frontend_->SetCameras(dataset_->GetCamera(0), dataset_->GetCamera(1));
+        frontend_->SetCameras(dataset_->GetCamera(0), dataset_->GetCamera(1)); // 在datasets->Init()对camera_进行赋值
 
         backend_->SetMap(map_);
         backend_->SetCameras(dataset_->GetCamera(0), dataset_->GetCamera(1));
 
         viewer_->SetMap(map_);
-
 
         return true;
     }
@@ -56,13 +54,13 @@ namespace myslam{
     }
 
     bool VisualOdometry::Step() {
-        LOG(INFO) << "duan dian";
-        Frame::Ptr new_frame = dataset_->NextFrame();
+
+        Frame::Ptr new_frame = dataset_->NextFrame(); // 构造帧Frame，该帧中有【ID，左图和右图】
 
         if (new_frame == nullptr) return false;
-
+        LOG(INFO) << "duan dian";
         auto t1 = std::chrono::steady_clock::now();
-        bool success = frontend_->AddFrame(new_frame);
+        bool success = frontend_->AddFrame(new_frame);  // 进入前端
         auto t2 = std::chrono::steady_clock::now();
         auto time_used =
                 std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);

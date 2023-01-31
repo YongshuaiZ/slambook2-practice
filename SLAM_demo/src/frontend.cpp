@@ -86,15 +86,16 @@ bool Frontend::InsertKeyframe() {
     // triangulate map points
     TriangulateNewPoints();
 
+    LOG(INFO) << "三角化 success";
     // update backend because we have a new keyframe
     backend_->UpdateMap();
-    LOG(INFO) << "ceshi";
 
     if (viewer_) viewer_->UpdateMap();
 
     return true;
 
 }
+
 int Frontend::TriangulateNewPoints() {
         std::vector<Sophus::SE3d> poses{camera_left_->pose(), camera_right_->pose()};
         Sophus::SE3d current_pose_Twc = current_frame_->GetPose().inverse();
@@ -132,6 +133,7 @@ int Frontend::TriangulateNewPoints() {
         return cnt_triangulated_pts;
     }
 
+    //查找当前帧中的特征，看是否对应已有的地图点，若对应则为地图点添加当前帧内的特征观测
 void Frontend::SetObservationsForKeyFrame() {
         for (auto &feat : current_frame_->features_left_) {
             auto mp = feat->map_point_.lock();
@@ -280,8 +282,8 @@ int Frontend::TrackLastFrame() {
  * 在初始化阶段，根据左右目之间的光流匹配，寻找可以三角化的地图点，成功时建立初始地图
  * */
 bool Frontend::StereoInit() {
-    int num_features_left = DetectFeatures(); // 左目中特帧点数
-    int num_coor_features = FindFeaturesInRight(); // 左图和右图中所相对应的特征
+    int num_features_left = DetectFeatures(); /// 提取左目中特帧， 完成 current_frame_->features_left_
+    int num_coor_features = FindFeaturesInRight();  /// 特征匹配 左图和右图中所相对应的特征 完成 current_frame_->features_right_
     if(num_coor_features < num_features_init_){
         return false;
     }
@@ -309,7 +311,9 @@ int Frontend::DetectFeatures(){
     }
 
     std::vector<cv::KeyPoint> keypoints;
-    gftt_->detect(current_frame_->left_img_,keypoints,mask);  // ? mask
+    /// detect函数，第三个参数是用来指定特征点选取区域的，一个和原图像同尺寸的掩膜，其中非0区域代表detect函数感兴趣的提取区域，相当于为
+    /// detect函数明确了提取的大致位置
+    gftt_->detect(current_frame_->left_img_,keypoints,mask);  //
     int cnt_detected = 0;
     for(auto &kp:keypoints)
     {
@@ -322,7 +326,7 @@ int Frontend::DetectFeatures(){
     return cnt_detected;
 }
 
-/// 找到当前帧右图中与左图所对应的特征
+/// 找到当前帧右图中与左图所对应的特征 【特征匹配】
 int Frontend::FindFeaturesInRight() {
     // use LK flow to estimate points in the right image
     std::vector<cv::Point2f> kps_left,kps_right;

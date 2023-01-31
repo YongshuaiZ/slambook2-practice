@@ -18,6 +18,6 @@ Config::~Config() {
         file_.release();
 }
 
-std::shared_ptr<Config> Config::config_ = nullptr;
+std::shared_ptr<Config> Config::config_ = nullptr;  // 静态成员变量（类内声明，类外定义）
 
 }

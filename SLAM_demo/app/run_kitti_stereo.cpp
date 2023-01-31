@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
 
     myslam::VisualOdometry::Ptr vo(
             new myslam::VisualOdometry(FLAGS_config_file));
-    assert(vo->Init() == true);
+    assert(vo->Init() == true); // 定义句柄，初始化
     vo->Run();
 
     return 0;

@@ -19,7 +19,6 @@ bool Dataset::Init() {
         return false;
     }
 
-
     for (int i = 0; i < 4; ++i){   //一共有P0,P1,P2,P3四个相机，这里就是要把四个相机的参数全部读取到
         //前三个字符是P0：所以这里定义了一个长度为3的字符数组，读完这三个字符后就遇到了第一个空格，fin将会跳过这个空格，读取参数
         char camera_name[3];
@@ -36,8 +35,9 @@ bool Dataset::Init() {
             projection_data[8], projection_data[9], projection_data[10];
         Vec3 t;
         t << projection_data[3], projection_data[7], projection_data[11];
-        t = K.inverse() * t;
-        K = K * 0.5;
+        ///t = K.inverse() * t,参考https://blog.csdn.net/yangziluomu/article/details/78339575
+        t = K.inverse() * t;  // ？
+        K = K * 0.5;  // 因为前面你把读到的图像全部resize成了原来的一半，所以需要在内参矩阵上乘以0.5,将投影获得的像素坐标也变为原来的一半
         Camera::Ptr new_camera(new Camera(K(0, 0), K(1, 1), K(0, 2), K(1, 2),
                                           t.norm(), Sophus::SE3d(Sophus::SO3d(), t)));
         cameras_.push_back(new_camera);
@@ -63,6 +63,25 @@ Frame::Ptr Dataset::NextFrame() {
         LOG(WARNING) << "cannot find images at index " << current_image_index_;
         return nullptr;
     }
+
+    /// 利用resize()函数改变图像尺寸
+    //resize(InputArray src, OutputArray dst, Size dsize,double fx=0, double fy=0, int interpolation=INTER_LINEAR )
+    /**
+     * InputArray src ：输入，原图像，即待改变大小的图像；
+       OutputArray dst： 输出，改变后的图像。这个图像和原图像具有相同的内容，只是大小和原图像不一样而已；
+       dsize：输出图像的大小。
+       如果这个参数不为0，那么就代表将原图像缩放到这个Size(width，height)指定的大小；如果这个参数为0，那么原图像缩放之后的大小就要通过下面的公式来计算：
+       dsize = Size(round(fxsrc.cols), round(fysrc.rows))
+      其中，fx和fy就是下面要说的两个参数，是图像width方向和height方向的缩放比例。
+      fx：width方向的缩放比例，如果它是0，那么它就会按照(double)dsize.width/src.cols来计算；
+      fy：height方向的缩放比例，如果它是0，那么它就会按照(double)dsize.height/src.rows来计算；
+      interpolation：这个是指定插值的方式，图像缩放之后，肯定像素要进行重新计算的，就靠这个参数来指定重新计算像素的方式，有以下几种：
+      INTER_NEAREST - 最邻近插值
+      INTER_LINEAR - 双线性插值，如果最后一个参数你不指定，默认使用这种方法
+      INTER_AREA - resampling using pixel area relation. It may be a preferred method for image decimation, as it gives moire’-free results. But when the image is zoomed, it is similar to the INTER_NEAREST method.
+      INTER_CUBIC - 4x4像素邻域内的双立方插值
+      INTER_LANCZOS4 - 8x8像素邻域内的Lanczos插值
+     */
 
     cv::Mat image_left_resized, image_right_resized;
     cv::resize(image_left, image_left_resized, cv::Size(), 0.5, 0.5,
