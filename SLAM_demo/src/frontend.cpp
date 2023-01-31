@@ -44,8 +44,8 @@ bool Frontend::Track() {
         current_frame_->SetPose(relative_motion_ * last_frame_->GetPose()); // Tcl * Tlw
     }
 
-    int num_track_last = TrackLastFrame();
-    tracking_inliers_ = EstimateCurrentPose();
+    int num_track_last = TrackLastFrame();  //last frame 和current frame之间特征匹配 【光流法】
+    tracking_inliers_ = EstimateCurrentPose(); // 使用g2o进行图优化，仅优化位姿
 
     if (tracking_inliers_ > num_features_tracking_) {
         // tracking good
@@ -65,6 +65,8 @@ bool Frontend::Track() {
     return true;
 }
 
+// 插入关键帧
+// 每当有一个新的关键帧，则激活后端优化
 bool Frontend::InsertKeyframe() {
     if (tracking_inliers_ >= num_features_needed_for_keyframe_) {
         // still have enough features, don't insert keyframe
@@ -78,8 +80,8 @@ bool Frontend::InsertKeyframe() {
     LOG(INFO) << "Set frame " << current_frame_->id_ << " as keyframe "
               << current_frame_->keyframe_id_;
 
-    SetObservationsForKeyFrame();
-    DetectFeatures();  // detect new features
+    SetObservationsForKeyFrame();  // 对mappoint设置观测 ，看mappoint被哪些特帧观测到
+    DetectFeatures();  // detect new features 如果是关键帧才能执行到这一步，是关键帧的话其跟踪到的内点数目就会相应不足，需要补充
 
     // track in right image
     FindFeaturesInRight();
@@ -168,7 +170,8 @@ int Frontend::EstimateCurrentPose(){
     for(size_t i=0;i<current_frame_->features_left_.size();i++)
     {
         auto mp = current_frame_->features_left_[i]->map_point_.lock();
-        if(mp){
+        if(mp){  //这里就涉及到前面在TrackLastFrame()函数里面提到的，有些特征虽然被跟踪到了，但是并没有受到三角化，即没有map_point_
+            //这里便对feature有没有map_point_进行判断，有则可以往下进行重投影，没有则不行，因为重投影需要点的3D位置TrackLastFrame()函数里面提到的，有些特征虽然被跟踪到了，但是并没有受到三角化，即没有map_point_
             features.push_back(current_frame_->features_left_[i]);
             EdgeProjectionPoseOnly *edge =
                     new EdgeProjectionPoseOnly(mp->pos_,K);

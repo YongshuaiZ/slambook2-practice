@@ -31,7 +31,8 @@ namespace myslam {
         while (backend_running_.load()) {
             std::unique_lock<std::mutex> lock(data_mutex_);
             map_update_.wait(lock);
-
+            // wait():一般编程中都需要先检查一个条件才进入等待环节，因此在中间有一个检查时段，检查条件的时候是不安全的，需要lock
+            // 被notify_one唤醒后，wait() 函数也会自动调用 data_mutex_.lock()，使得data_mutex_恢复到上锁状态
             /// 后端仅优化激活的Frames和Landmarks
             Map::KeyframesType active_kfs = map_->GetActiveKeyFrames();
             Map::LandmarksType active_landmarks = map_->GetActiveMapPoints();
